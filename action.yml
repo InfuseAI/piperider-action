@@ -1,12 +1,25 @@
-name: 'Container Action Template'
-description: 'Get started with Container actions'
-author: 'GitHub'
+name: 'PipeRider CLI Action'
+
+description: 'Run the PipeRider Data Testing via GitHub Action'
+
+author: 'InfuseAI'
+
+branding:
+  icon: 'trending-up'
+  color: 'orange'
+
 inputs: 
-  myInput:
-    description: 'Input to use'
-    default: 'world'
+  stages:
+    description: 'Input the file path of stages'
+    required: true
+  keep_ge_workspace:
+    description: 'Keep the workspace after the action is complete'
+    required: false
+    default: false
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.myInput }}
+    - ${{ inputs.stages }}
+    - ${{ inputs.keep_ge_workspace }}

@@ -1,3 +1,3 @@
 #!/bin/sh -l
 
-echo "hello $1"
+eval piperider-cli run --stage $1 --keep-ge-workspace $2

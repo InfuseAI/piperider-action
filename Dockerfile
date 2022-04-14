@@ -1,4 +1,4 @@
-FROM alpine:3.10
+FROM infuseai/piperider-cli:0.1.0-dev
 
 COPY LICENSE README.md /
 
