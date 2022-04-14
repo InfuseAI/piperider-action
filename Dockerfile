@@ -1,4 +1,4 @@
-FROM infuseai/piperider-cli:0.1.0
+FROM infuseai/piperider-cli:v0.1.0
 
 COPY LICENSE README.md /
 
