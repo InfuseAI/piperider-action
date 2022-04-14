@@ -10,7 +10,7 @@ branding:
 
 inputs: 
   stages:
-    description: 'Input the file path of stages'
+    description: 'Input the path of stages yaml files, Example: stages/local.yaml or stages/*.yaml'
     required: true
 
 runs:
@@ -18,4 +18,3 @@ runs:
   image: 'Dockerfile'
   args:
     - ${{ inputs.stages }}
-    - ${{ inputs.keep_ge_workspace }}

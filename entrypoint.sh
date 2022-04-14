@@ -1,3 +1,3 @@
 #!/bin/sh -l
 
-eval piperider-cli run --stage $1
+eval piperider-cli run $1
