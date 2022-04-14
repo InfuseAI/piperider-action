@@ -12,10 +12,6 @@ inputs:
   stages:
     description: 'Input the file path of stages'
     required: true
-  keep_ge_workspace:
-    description: 'Keep the workspace after the action is complete'
-    required: false
-    default: false
 
 runs:
   using: 'docker'
