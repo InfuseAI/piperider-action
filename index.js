@@ -27,12 +27,11 @@ async function run () {
     // Action triggered by pull request
     core.debug(`GitHub Action triggered by pull request #${event.pull_request.number}`);
     const prNumber = event.pull_request.number;
-    const {data: comment} = await octokit.rest.issues.createComment({
+    await octokit.rest.issues.createComment({
       ...context.repo,
       issue_number: prNumber,
       body: 'Hello World!'
     });
-    core.debug(data.comment);
   }
 
   // TODO: Write the output to GitHub action annotation
