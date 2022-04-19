@@ -1,3 +1,5 @@
 #!/bin/bash -l
 
-eval piperider-cli run $1 && node index.js
+env
+/root/.nvm/versions/node/v16.13.0/bin/node index.js
+eval piperider-cli run $1 
