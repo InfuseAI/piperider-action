@@ -12,9 +12,15 @@ inputs:
   stages:
     description: 'Input the path of stages yaml files, Example: stages/local.yaml or stages/*.yaml'
     required: true
+  github_token: 
+    description: 'GITHUB_TOKEN or a repo scoped PAT.'
+    default: ${{ github.token }}
+    required: true
 
 runs:
   using: 'docker'
   image: 'Dockerfile'
+  env:
+    GITHUB_TOKEN: ${{ inputs.github_token }}
   args:
     - ${{ inputs.stages }}
