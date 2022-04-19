@@ -23,16 +23,21 @@ async function run () {
     core.warning('GitHub Action is not triggered by event');
     return;
   }
+  if (event.pull_request) {
+    // Action triggered by pull request
+    core.debug(`GitHub Action triggered by pull request #${event.pull_request.number}`);
+    const prNumber = event.pull_request.number;
+    const {data: comment} = await octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: prNumber,
+      body: 'Hello World!'
+    });
+    core.debug(data.comment);
+  }
 
+  // TODO: Write the output to GitHub action annotation
   core.debug(`GitHub: ${JSON.stringify(context)}`);
   core.debug(`Running action: ${JSON.stringify(event)}`);
-  const prNumber = event.pull_request.number || null;
-  const {data: comment} = await octokit.rest.issues.createComment({
-    ...context.repo,
-    issue_number: prNumber,
-    body: 'Hello World!'
-  });
-  core.debug(data.comment); 
 }
 
 run();
