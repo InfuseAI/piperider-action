@@ -14,8 +14,11 @@ ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 RUN node --version
 RUN npm --version
 
-COPY LICENSE README.md /
+WORKDIR /usr/src/github-action/
+COPY . .
+RUN npm install 
 
+WORKDIR /usr/src/github/
 COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
