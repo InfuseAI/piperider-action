@@ -26,10 +26,11 @@ function getPipeRiderOutputLog() {
 }
 
 function generateGitHubPullRequestComment(returnCode) {
-  const outputLog = getPipeRiderOutputLog();
+  const colorCodeRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+  const outputLog = getPipeRiderOutputLog().replace(colorCodeRegex, '');
   const status = (returnCode === '0') ? 'Success' : 'Failure';
   return `
-# PipeRider Report
+# PipeRider CLI Report
 > Test Result: ${status}
 \`\`\`
 ${outputLog}

@@ -1,4 +1,5 @@
 #!/bin/bash -l
+set -o pipefail
 
 eval piperider-cli run $1 | tee output.log
 rc=$?
