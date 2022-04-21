@@ -42,7 +42,7 @@ ${outputLog}
 }
 
 async function run (argv) {
-  const returnCode = argv[1] || '0';
+  const returnCode = argv[0] || '0';
   const octokit = github.getOctokit(GITHUB_TOKEN);
   const event = (isFileExists(GITHUB_EVENT_PATH)) ? require(GITHUB_EVENT_PATH) : null;
 
@@ -74,13 +74,23 @@ async function run (argv) {
   const uploadResult = await artifactClient.uploadArtifact(artifactName, reportFiles, GITHUB_WORKSPACE, options);
   core.debug(`Upload result: ${JSON.stringify(uploadResult)}`);
 
-  // TODO: Write the output to GitHub action annotation
+  // Write the output to GitHub action annotation
   core.debug(`GitHub: ${JSON.stringify(context)}`);
   core.debug(`Running action: ${JSON.stringify(event)}`);
 
   core.notice('PipeRider CLI Test Report');
   core.warning('Test for warning annotation');
   core.error('Test for error annotation');
+
+  const totalStages = fs.readdirSync(GITHUB_WORKSPACE).filter(f => f.endsWith('.json')).filter(f => !f.endsWith('_ydata.json'));
+  const successStages = fs.readdirSync(GITHUB_WORKSPACE).filter(f => f.endsWith('.json')).filter(f => f.endsWith('_ydata.json'));
+  if (successStages.length === 0) {
+    core.error('No successful stages found');
+  } else if (totalStages.length > successStages.length) {
+    core.warning(`${successStages.length}/${totalStages.length} stages are successful`);
+  } else {
+    core.notice(`${successStages.length}/${totalStages.length} stages are successful`);
+  }
 
   exit(returnCode);
 }
