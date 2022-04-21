@@ -1,7 +1,9 @@
 const fs = require('fs');
-const github = require('@actions/github');
-const context = github.context;
 const core = require('@actions/core');
+const artifact = require('@actions/artifact');
+const github = require('@actions/github');
+
+const context = github.context;
 const { exit } = require('process');
 
 const {GITHUB_TOKEN} = process.env;
@@ -60,9 +62,23 @@ async function run (argv) {
     });
   }
 
+  // Upload artifacts
+  const artifactClient = artifact.create();
+  const artifactName = 'test-report';
+  const reportFiles = fs.readdirSync(GITHUB_WORKSPACE).filter(file => file.endsWith('.json'))
+  const options = {
+    continueOnError: true
+  };
+  const uploadResult = await artifactClient.uploadArtifact(artifactName, reportFiles, GITHUB_WORKSPACE, options);
+  core.debug(`Upload result: ${JSON.stringify(uploadResult)}`);
+
   // TODO: Write the output to GitHub action annotation
   core.debug(`GitHub: ${JSON.stringify(context)}`);
   core.debug(`Running action: ${JSON.stringify(event)}`);
+
+  core.notice('PipeRider CLI Test Report');
+  core.warning('Test for warning annotation');
+  core.error('Test for error annotation');
 
   exit(returnCode);
 }
