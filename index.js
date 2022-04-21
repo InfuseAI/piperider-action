@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const core = require('@actions/core');
 const artifact = require('@actions/artifact');
 const github = require('@actions/github');
@@ -65,10 +66,11 @@ async function run (argv) {
   // Upload artifacts
   const artifactClient = artifact.create();
   const artifactName = 'test-report';
-  const reportFiles = fs.readdirSync(GITHUB_WORKSPACE).filter(file => file.endsWith('.json'))
+  const reportFiles = fs.readdirSync(GITHUB_WORKSPACE).filter(file => file.endsWith('.json')).map(file => path.join(GITHUB_WORKSPACE, file));
   const options = {
     continueOnError: true
   };
+  core.debug(`Uploading artifacts: ${reportFiles}`);
   const uploadResult = await artifactClient.uploadArtifact(artifactName, reportFiles, GITHUB_WORKSPACE, options);
   core.debug(`Upload result: ${JSON.stringify(uploadResult)}`);
 
