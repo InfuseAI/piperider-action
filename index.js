@@ -66,20 +66,24 @@ async function run (argv) {
   // Upload artifacts
   const artifactClient = artifact.create();
   const artifactName = 'piperider-cli-test-report';
-  const reportFiles = fs.readdirSync(GITHUB_WORKSPACE).filter(file => file.endsWith('.json')).map(file => path.join(GITHUB_WORKSPACE, file));
+  const reportFiles = fs.readdirSync(GITHUB_WORKSPACE).filter(file => file.endsWith('.json'))
   const options = {
     continueOnError: true
   };
   core.debug(`Uploading artifacts: ${reportFiles}`);
-  const uploadResult = await artifactClient.uploadArtifact(artifactName, reportFiles, GITHUB_WORKSPACE, options);
+  const uploadResult = await artifactClient.uploadArtifact(
+    artifactName,
+    reportFiles.map(file => path.join(GITHUB_WORKSPACE, file)),
+    GITHUB_WORKSPACE,
+    options);
   core.debug(`Upload result: ${JSON.stringify(uploadResult)}`);
 
   // Write the output to GitHub action annotation
   core.debug(`GitHub: ${JSON.stringify(context)}`);
   core.debug(`Running action: ${JSON.stringify(event)}`);
 
-  const totalStages = fs.readdirSync(GITHUB_WORKSPACE).filter(f => f.endsWith('.json')).filter(f => !f.endsWith('_ydata.json'));
-  const successStages = fs.readdirSync(GITHUB_WORKSPACE).filter(f => f.endsWith('.json')).filter(f => f.endsWith('_ydata.json'));
+  const totalStages = reportFiles.filter(f => f.endsWith('.json')).filter(f => !f.endsWith('_ydata.json')).filter(f => f !== 'aggregated-reports.json').length;
+  const successStages = reportFiles.filter(f => f.endsWith('.json')).filter(f => f.endsWith('_ydata.json'));
   if (successStages.length === 0) {
     core.error('No successful stages found');
   } else if (totalStages.length > successStages.length) {
