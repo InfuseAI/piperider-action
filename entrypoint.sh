@@ -1,6 +1,8 @@
 #!/bin/bash -l
 set -o pipefail
 
+GITHUB_ACTION_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
 eval "piperider-cli run $1" | tee output.log ; rc=$?
 
 pushd /usr/src/github-action
