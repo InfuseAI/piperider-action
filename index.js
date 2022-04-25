@@ -65,7 +65,7 @@ async function run (argv) {
 
   // Upload artifacts
   const artifactClient = artifact.create();
-  const artifactName = 'piperide-cli-test-report';
+  const artifactName = 'piperider-cli-test-report';
   const reportFiles = fs.readdirSync(GITHUB_WORKSPACE).filter(file => file.endsWith('.json')).map(file => path.join(GITHUB_WORKSPACE, file));
   const options = {
     continueOnError: true
