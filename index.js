@@ -28,13 +28,20 @@ function getPipeRiderOutputLog() {
   return '';
 }
 
+function getReportURL() {
+  const outputLog = getPipeRiderOutputLog();
+  let match = outputLog.match(/Report URL: (.*)/);
+  return match ? match[1] : "";
+}
+
 function generateGitHubPullRequestComment(returnCode) {
   const colorCodeRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
   const outputLog = getPipeRiderOutputLog().replace(colorCodeRegex, '');
-  const status = (returnCode === '0') ? 'Success' : 'Failure';
+  const status = (returnCode === '0') ? '✅ Success' : '❌ Failure';
   return `
 # PipeRider CLI Report
 > Test Result: ${status}
+> Test Report: ${getReportURL()}
 \`\`\`
 ${outputLog}
 \`\`\`
@@ -82,7 +89,7 @@ async function run (argv) {
   core.debug(`GitHub: ${JSON.stringify(context)}`);
   core.debug(`Running action: ${JSON.stringify(event)}`);
 
-  const totalStages = reportFiles.filter(f => f.endsWith('.json')).filter(f => !f.endsWith('_ydata.json')).filter(f => f !== 'aggregated-reports.json').length;
+  const totalStages = reportFiles.filter(f => f.endsWith('.json')).filter(f => !f.endsWith('_ydata.json')).filter(f => f !== 'aggregated-reports.json');
   const successStages = reportFiles.filter(f => f.endsWith('.json')).filter(f => f.endsWith('_ydata.json'));
   if (successStages.length === 0) {
     core.error('No successful stages found');
@@ -92,6 +99,9 @@ async function run (argv) {
     core.notice(`${successStages.length}/${totalStages.length} stages are successful`);
   }
 
+  if (getReportURL() != "") {
+    core.notice(`Report URL: ${getReportURL()}`);
+  }
   exit(returnCode);
 }
 
