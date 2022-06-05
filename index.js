@@ -10,6 +10,7 @@ const { exit } = require('process');
 const {GITHUB_TOKEN} = process.env;
 const {GITHUB_EVENT_PATH} = process.env;
 const {GITHUB_WORKSPACE} = process.env;
+const {GITHUB_ACTION_URL} = process.env;
 
 function isFileExists(path) {
   try {
@@ -28,20 +29,21 @@ function getPipeRiderOutputLog() {
   return '';
 }
 
-function getReportURL() {
-  const outputLog = getPipeRiderOutputLog();
-  let match = outputLog.match(/Report URL: (.*)/);
-  return match ? match[1] : "";
-}
-
 function generateGitHubPullRequestComment(returnCode) {
   const colorCodeRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
-  const outputLog = getPipeRiderOutputLog().replace(colorCodeRegex, '');
+  const fetchNotationRegex = /^fetching .*'\n/gm;
+  const profileNotationRegex = /^profiling .* type=.*\n/gm;
+  const resultNotationRegex = /^Results .*/gm;
+  const outputLog = getPipeRiderOutputLog()
+    .replace(colorCodeRegex, '')
+    .replace(profileNotationRegex, '')
+    .replace(fetchNotationRegex, '')
+    .replace(resultNotationRegex, '');
   const status = (returnCode === '0') ? '✅ Success' : '❌ Failure';
   return `
 # PipeRider CLI Report
 > Test Result: ${status}
-> Test Report: ${getReportURL()}
+> Test Report: ${GITHUB_ACTION_URL}
 \`\`\`
 ${outputLog}
 \`\`\`
@@ -73,7 +75,8 @@ async function run (argv) {
   // Upload artifacts
   const artifactClient = artifact.create();
   const artifactName = 'piperider-cli-test-report';
-  const reportFiles = fs.readdirSync(GITHUB_WORKSPACE).filter(file => file.endsWith('.json'))
+  const metaDir = path.join(GITHUB_WORKSPACE, '.piperider');
+  const reportFiles = fs.readdirSync(path.join(metaDir, 'reports', 'latest')).filter(f => f.endsWith('.html'))
   const options = {
     continueOnError: true
   };
@@ -89,19 +92,17 @@ async function run (argv) {
   core.debug(`GitHub: ${JSON.stringify(context)}`);
   core.debug(`Running action: ${JSON.stringify(event)}`);
 
-  const totalStages = reportFiles.filter(f => f.endsWith('.json')).filter(f => !f.endsWith('_ydata.json')).filter(f => f !== 'aggregated-reports.json');
-  const successStages = reportFiles.filter(f => f.endsWith('.json')).filter(f => f.endsWith('_ydata.json'));
-  if (successStages.length === 0) {
-    core.error('No successful stages found');
-  } else if (totalStages.length > successStages.length) {
-    core.warning(`${successStages.length}/${totalStages.length} stages are successful`);
+  const outputFiles = fs.readdirSync(path.join(metaDir, "outputs", "latest"))
+    .filter((f) => f.endsWith(".json"))
+    .filter((f) => f != ".profiler.json");
+  if (outputFiles.length === 0) {
+    core.error('No successful piperider results found');
+  } else if (outputFiles.length > reportFiles.length) {
+    core.warning(`${reportFiles.length}/${outputFiles.length} reports are generated`);
   } else {
-    core.notice(`${successStages.length}/${totalStages.length} stages are successful`);
+    core.notice(`${reportFiles.length}/${outputFiles.length} reports are generated`);
   }
 
-  if (getReportURL() != "") {
-    core.notice(`Report URL: ${getReportURL()}`);
-  }
   exit(returnCode);
 }
 
