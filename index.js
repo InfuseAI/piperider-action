@@ -76,15 +76,16 @@ async function run (argv) {
   const artifactClient = artifact.create();
   const artifactName = 'piperider-cli-test-report';
   const metaDir = path.join(GITHUB_WORKSPACE, '.piperider');
-  const reportFiles = fs.readdirSync(path.join(metaDir, 'reports', 'latest')).filter(f => f.endsWith('.html'))
+  const reportFolder = fs.readdirSync(path.join(metaDir, 'reports'))
+  const reportFiles = fs.readdirSync(path.join(metaDir, 'reports', reportFolder[0])).filter(f => f.endsWith('.html'))
   const options = {
     continueOnError: true
   };
   core.debug(`Uploading artifacts: ${reportFiles}`);
   const uploadResult = await artifactClient.uploadArtifact(
     artifactName,
-    reportFiles.map(file => path.join(GITHUB_WORKSPACE, file)),
-    GITHUB_WORKSPACE,
+    reportFiles.map(file => path.join(metaDir, 'reports', reportFolder[0], file)),
+    path.join(metaDir, 'reports', reportFolder[0]),
     options);
   core.debug(`Upload result: ${JSON.stringify(uploadResult)}`);
 

@@ -1,10 +1,13 @@
-FROM infuseai/piperider-cli:v0.1.3.11
+FROM infuseai/piperider-cli:v0.1.3.12
 
 ENV NODE_VERSION=16.13.0
 
 RUN apt-get update && apt-get install -y ca-certificates curl && rm -rf /var/lib/apt/lists/*
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir dbt-snowflake==1.1.0 snowflake-sqlalchemy==1.3.4
 
 ENV NVM_DIR=/root/.nvm
 RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
