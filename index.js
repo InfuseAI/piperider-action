@@ -50,6 +50,23 @@ ${outputLog}
 `;
 }
 
+function getFilesUnderDir(dir) {
+  var results = [];
+  var list = fs.readdirSync(dir);
+  list.forEach(function(file) {
+      file = path.join(dir, file);
+      var stat = fs.statSync(file);
+      if (stat && stat.isDirectory()) {
+          /* Recurse into a subdirectory */
+          results = results.concat(getFilesUnderDir(file));
+      } else {
+          /* Is a file */
+          results.push(file);
+      }
+  });
+  return results;
+}
+
 async function run (argv) {
   const returnCode = argv[0] || '0';
   const octokit = github.getOctokit(GITHUB_TOKEN);
@@ -78,13 +95,14 @@ async function run (argv) {
   const metaDir = path.join(GITHUB_WORKSPACE, '.piperider');
   const reportFolder = fs.readdirSync(path.join(metaDir, 'reports'))
   const reportFiles = fs.readdirSync(path.join(metaDir, 'reports', reportFolder[0])).filter(f => f.endsWith('.html'))
+  const reportArtifacts = getFilesUnderDir(path.join(metaDir, 'reports', reportFolder[0]))
   const options = {
     continueOnError: true
   };
-  core.debug(`Uploading artifacts: ${reportFiles}`);
+  core.debug(`Uploading artifacts: ${reportArtifacts}`);
   const uploadResult = await artifactClient.uploadArtifact(
     artifactName,
-    reportFiles.map(file => path.join(metaDir, 'reports', reportFolder[0], file)),
+    reportArtifacts,
     path.join(metaDir, 'reports', reportFolder[0]),
     options);
   core.debug(`Upload result: ${JSON.stringify(uploadResult)}`);
