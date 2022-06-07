@@ -6,9 +6,6 @@ RUN apt-get update && apt-get install -y ca-certificates curl && rm -rf /var/lib
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir dbt-snowflake==1.1.0 snowflake-sqlalchemy==1.3.4
-
 ENV NVM_DIR=/root/.nvm
 RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
 RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
