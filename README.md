@@ -10,9 +10,7 @@ See [action.yml](action.yml)
 ```yaml
 steps:
 ...
-- uses: InfuseAI/piperider-action@v0.1.0
-  input:
-    stages: stages/*.yaml
+- uses: InfuseAI/piperider-action@v0.1.3.12
 ```
 
 # License
