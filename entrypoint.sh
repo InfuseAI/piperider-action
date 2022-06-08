@@ -9,7 +9,7 @@ if [ ! -f ${GITHUB_WORKSPACE}/requirements.txt ]; then
 fi
 
 pip install --no-cache-dir -r ${GITHUB_WORKSPACE}/requirements.txt
-piperider-cli run --no-interaction --generate-report | tee output.log ; rc=$?
+piperider run --no-interaction --generate-report | tee output.log ; rc=$?
 
 pushd /usr/src/github-action
 /root/.nvm/versions/node/v16.13.0/bin/node index.js $rc || exit $?
