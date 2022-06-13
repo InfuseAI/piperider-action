@@ -14,6 +14,12 @@ inputs:
     default: ${{ github.token }}
     required: true
 
+outputs:
+  analysis:
+    description: 'The analysis from PipeRider'
+  status:
+    description: 'The exit status from PipeRider'
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
