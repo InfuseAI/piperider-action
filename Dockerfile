@@ -1,4 +1,4 @@
-FROM infuseai/piperider:v0.2.0
+FROM infuseai/piperider:v0.3.0-rc.3
 
 ENV NODE_VERSION=16.13.0
 
@@ -16,7 +16,7 @@ RUN npm --version
 
 WORKDIR /usr/src/github-action/
 COPY . .
-RUN npm install 
+RUN npm install
 
 WORKDIR /usr/src/github/
 COPY entrypoint.sh /entrypoint.sh

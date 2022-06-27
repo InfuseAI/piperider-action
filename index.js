@@ -67,6 +67,26 @@ function getFilesUnderDir(dir) {
   return results;
 }
 
+function getReportArtifacts(dir) {
+  var results = [];
+  var list = fs.readdirSync(dir);
+
+  results = results.concat(list)
+
+  list.forEach(function(file) {
+      file = path.join(dir, file);
+      var stat = fs.statSync(file);
+      if (stat && stat.isFile() && !file.endsWith('.json')) {
+        results.push(file)
+      }
+  });
+
+  // add files for html rendering usage
+  results = results.concat(getFilesUnderDir(path.join(dir, 'logo')))
+  results = results.concat(getFilesUnderDir(path.join(dir, 'static')))
+  return results;
+}
+
 async function run (argv) {
   const returnCode = argv[0] || '0';
   const octokit = github.getOctokit(GITHUB_TOKEN);
@@ -91,11 +111,9 @@ async function run (argv) {
 
   // Upload artifacts
   const artifactClient = artifact.create();
-  const artifactName = 'piperider-cli-test-report';
-  const metaDir = path.join(GITHUB_WORKSPACE, '.piperider');
-  const reportFolder = fs.readdirSync(path.join(metaDir, 'reports'))
-  const reportFiles = fs.readdirSync(path.join(metaDir, 'reports', reportFolder[0])).filter(f => f.endsWith('.html'))
-  const reportArtifacts = getFilesUnderDir(path.join(metaDir, 'reports', reportFolder[0]))
+  const artifactName = 'PipeRider-Reports';
+  const reportDir = path.join(GITHUB_WORKSPACE, '.piperider', 'outputs', 'latest');
+  const reportArtifacts = getReportArtifacts(reportDir)
   const options = {
     continueOnError: true
   };
@@ -103,7 +121,7 @@ async function run (argv) {
   const uploadResult = await artifactClient.uploadArtifact(
     artifactName,
     reportArtifacts,
-    path.join(metaDir, 'reports', reportFolder[0]),
+    path.join(reportDir),
     options);
   core.debug(`Upload result: ${JSON.stringify(uploadResult)}`);
 
@@ -111,15 +129,11 @@ async function run (argv) {
   core.debug(`GitHub: ${JSON.stringify(context)}`);
   core.debug(`Running action: ${JSON.stringify(event)}`);
 
-  const outputFiles = fs.readdirSync(path.join(metaDir, "outputs", "latest"))
-    .filter((f) => f.endsWith(".json"))
-    .filter((f) => f != ".profiler.json");
+  const outputFiles = fs.readdirSync(reportDir).filter((f) => f == "run.json")
   if (outputFiles.length === 0) {
-    core.error('No successful piperider results found');
-  } else if (outputFiles.length > reportFiles.length) {
-    core.warning(`${reportFiles.length}/${outputFiles.length} reports are generated`);
+    core.error('No successful PipeRider results found');
   } else {
-    core.notice(`${reportFiles.length}/${outputFiles.length} reports are generated`);
+    core.notice(`PipeRider reports are generated`);
   }
 
   exit(returnCode);
