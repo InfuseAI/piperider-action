@@ -1,4 +1,4 @@
-FROM infuseai/piperider:v0.3.0-rc.3
+FROM infuseai/piperider:v0.3.0-rc.4
 
 ENV NODE_VERSION=16.13.0
 

@@ -71,8 +71,6 @@ function getReportArtifacts(dir) {
   var results = [];
   var list = fs.readdirSync(dir);
 
-  results = results.concat(list)
-
   list.forEach(function(file) {
       file = path.join(dir, file);
       var stat = fs.statSync(file);
@@ -112,7 +110,7 @@ async function run (argv) {
   // Upload artifacts
   const artifactClient = artifact.create();
   const artifactName = 'PipeRider-Reports';
-  const reportDir = path.join(GITHUB_WORKSPACE, '.piperider', 'outputs', 'latest');
+  const reportDir = fs.readlinkSync(path.join(GITHUB_WORKSPACE, '.piperider', 'outputs', 'latest'));
   const reportArtifacts = getReportArtifacts(reportDir)
   const options = {
     continueOnError: true
@@ -121,7 +119,7 @@ async function run (argv) {
   const uploadResult = await artifactClient.uploadArtifact(
     artifactName,
     reportArtifacts,
-    path.join(reportDir),
+    reportDir,
     options);
   core.debug(`Upload result: ${JSON.stringify(uploadResult)}`);
 
