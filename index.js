@@ -29,24 +29,45 @@ function getPipeRiderOutputLog() {
   return '';
 }
 
+function getSummarySection(outputLog) {
+  var lines = outputLog.split('\n');
+  var summarySection = false;
+  var summary = [];
+  for(var i = 0;i < lines.length;i++){
+    if (lines[i].indexOf('Summary') > -1) {
+      summarySection = true;
+    }
+
+    if (lines[i].indexOf('Generating reports from') > -1) {
+      break;
+    }
+
+    if (summarySection) {
+      summary.push(lines[i]);
+    }
+  }
+  return summary.join('\n');
+}
+
 function generateGitHubPullRequestComment(returnCode) {
   const colorCodeRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
-  const fetchNotationRegex = /^fetching .*'\n/gm;
-  const profileNotationRegex = /^profiling .* type=.*\n/gm;
-  const resultNotationRegex = /^Results .*/gm;
-  const outputLog = getPipeRiderOutputLog()
-    .replace(colorCodeRegex, '')
-    .replace(profileNotationRegex, '')
-    .replace(fetchNotationRegex, '')
-    .replace(resultNotationRegex, '');
+  const outputLog = getPipeRiderOutputLog().replace(colorCodeRegex, '');
+  const summary = getSummarySection(outputLog);
   const status = (returnCode === '0') ? '✅ Success' : '❌ Failure';
   return `
 # PipeRider CLI Report
 > Test Result: ${status}
 > Test Report: ${GITHUB_ACTION_URL}
 \`\`\`
+${summary}
+\`\`\`
+<details>
+<summary>Click to see detail PipeRider assessment</summary>
+
+\`\`\`
 ${outputLog}
 \`\`\`
+</details>
 `;
 }
 
