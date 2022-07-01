@@ -7,7 +7,7 @@ if [ -f ${GITHUB_WORKSPACE}/requirements.txt ]; then
     pip install --no-cache-dir -r ${GITHUB_WORKSPACE}/requirements.txt
 fi
 
-piperider run --no-interaction | tee output.log ; rc=$?
+piperider run --no-interaction --dbt-test | tee output.log ; rc=$?
 
 log=$(cat output.log)
 echo "::set-output name=analysis::${log}"

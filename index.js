@@ -33,8 +33,8 @@ function getSummarySection(outputLog) {
   var lines = outputLog.split('\n');
   var summarySection = false;
   var summary = [];
-  for(var i = 0;i < lines.length;i++){
-    if (lines[i].indexOf('Summary') > -1) {
+  for (var i = 0; i < lines.length; i++) {
+    if (/─+ Summary ─+/.test(lines[i])) {
       summarySection = true;
     }
 
