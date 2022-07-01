@@ -29,24 +29,45 @@ function getPipeRiderOutputLog() {
   return '';
 }
 
+function getSummarySection(outputLog) {
+  var lines = outputLog.split('\n');
+  var summarySection = false;
+  var summary = [];
+  for (var i = 0; i < lines.length; i++) {
+    if (/─+ Summary ─+/.test(lines[i])) {
+      summarySection = true;
+    }
+
+    if (lines[i].indexOf('Generating reports from') > -1) {
+      break;
+    }
+
+    if (summarySection) {
+      summary.push(lines[i]);
+    }
+  }
+  return summary.join('\n');
+}
+
 function generateGitHubPullRequestComment(returnCode) {
   const colorCodeRegex = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
-  const fetchNotationRegex = /^fetching .*'\n/gm;
-  const profileNotationRegex = /^profiling .* type=.*\n/gm;
-  const resultNotationRegex = /^Results .*/gm;
-  const outputLog = getPipeRiderOutputLog()
-    .replace(colorCodeRegex, '')
-    .replace(profileNotationRegex, '')
-    .replace(fetchNotationRegex, '')
-    .replace(resultNotationRegex, '');
+  const outputLog = getPipeRiderOutputLog().replace(colorCodeRegex, '');
+  const summary = getSummarySection(outputLog);
   const status = (returnCode === '0') ? '✅ Success' : '❌ Failure';
   return `
 # PipeRider CLI Report
 > Test Result: ${status}
 > Test Report: ${GITHUB_ACTION_URL}
 \`\`\`
+${summary}
+\`\`\`
+<details>
+<summary>Click to see detail PipeRider assessment</summary>
+
+\`\`\`
 ${outputLog}
 \`\`\`
+</details>
 `;
 }
 
@@ -64,6 +85,24 @@ function getFilesUnderDir(dir) {
           results.push(file);
       }
   });
+  return results;
+}
+
+function getReportArtifacts(dir) {
+  var results = [];
+  var list = fs.readdirSync(dir);
+
+  list.forEach(function(file) {
+      file = path.join(dir, file);
+      var stat = fs.statSync(file);
+      if (stat && stat.isFile() && !file.endsWith('.json')) {
+        results.push(file)
+      }
+  });
+
+  // add files for html rendering usage
+  results = results.concat(getFilesUnderDir(path.join(dir, 'logo')))
+  results = results.concat(getFilesUnderDir(path.join(dir, 'static')))
   return results;
 }
 
@@ -91,11 +130,9 @@ async function run (argv) {
 
   // Upload artifacts
   const artifactClient = artifact.create();
-  const artifactName = 'piperider-cli-test-report';
-  const metaDir = path.join(GITHUB_WORKSPACE, '.piperider');
-  const reportFolder = fs.readdirSync(path.join(metaDir, 'reports'))
-  const reportFiles = fs.readdirSync(path.join(metaDir, 'reports', reportFolder[0])).filter(f => f.endsWith('.html'))
-  const reportArtifacts = getFilesUnderDir(path.join(metaDir, 'reports', reportFolder[0]))
+  const artifactName = 'PipeRider-Reports';
+  const reportDir = fs.readlinkSync(path.join(GITHUB_WORKSPACE, '.piperider', 'outputs', 'latest'));
+  const reportArtifacts = getReportArtifacts(reportDir)
   const options = {
     continueOnError: true
   };
@@ -103,7 +140,7 @@ async function run (argv) {
   const uploadResult = await artifactClient.uploadArtifact(
     artifactName,
     reportArtifacts,
-    path.join(metaDir, 'reports', reportFolder[0]),
+    reportDir,
     options);
   core.debug(`Upload result: ${JSON.stringify(uploadResult)}`);
 
@@ -111,15 +148,11 @@ async function run (argv) {
   core.debug(`GitHub: ${JSON.stringify(context)}`);
   core.debug(`Running action: ${JSON.stringify(event)}`);
 
-  const outputFiles = fs.readdirSync(path.join(metaDir, "outputs", "latest"))
-    .filter((f) => f.endsWith(".json"))
-    .filter((f) => f != ".profiler.json");
+  const outputFiles = fs.readdirSync(reportDir).filter((f) => f == "run.json")
   if (outputFiles.length === 0) {
-    core.error('No successful piperider results found');
-  } else if (outputFiles.length > reportFiles.length) {
-    core.warning(`${reportFiles.length}/${outputFiles.length} reports are generated`);
+    core.error('No successful PipeRider results found');
   } else {
-    core.notice(`${reportFiles.length}/${outputFiles.length} reports are generated`);
+    core.notice(`PipeRider reports are generated`);
   }
 
   exit(returnCode);
