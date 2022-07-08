@@ -3,6 +3,9 @@ set -o pipefail
 
 export GITHUB_ACTION_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 
+uuid=$(md5 -q -s ${GITHUB_REPOSITORY})
+sed -i "s/^user_id: .*$/user_id: ${uuid}/" ${GITHUB_WORKSPACE}/.piperider/profile.yml
+
 if [ -f ${GITHUB_WORKSPACE}/requirements.txt ]; then
     pip install --no-cache-dir -r ${GITHUB_WORKSPACE}/requirements.txt
 fi
