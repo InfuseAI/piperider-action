@@ -1,8 +1,8 @@
-FROM infuseai/piperider:0.4.0
+FROM infuseai/piperider:0.4.1
 
 ENV NODE_VERSION=16.13.0
 
-RUN apt-get update && apt-get install -y ca-certificates curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ca-certificates curl uuid-runtime && rm -rf /var/lib/apt/lists/*
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 
