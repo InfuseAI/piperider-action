@@ -3,6 +3,8 @@ set -o pipefail
 
 export GITHUB_ACTION_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 
+piperider version && rm .piperider/.unsend_events.json
+
 uuid=$(uuidgen -n @oid -N "${GITHUB_REPOSITORY}" --sha1 | tr -d "-")
 sed -i "s/^user_id: .*$/user_id: ${uuid}/" ~/.piperider/profile.yml
 

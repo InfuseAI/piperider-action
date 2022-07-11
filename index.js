@@ -96,13 +96,13 @@ function getReportArtifacts(dir) {
       file = path.join(dir, file);
       var stat = fs.statSync(file);
       if (stat && stat.isFile() && !file.endsWith('.json')) {
-        results.push(file)
+        results.push(file);
+      } else if (stat && stat.isDirectory()) {
+        // add files for html rendering usage
+        results = results.concat(getFilesUnderDir(file));
       }
   });
 
-  // add files for html rendering usage
-  results = results.concat(getFilesUnderDir(path.join(dir, 'logo')))
-  results = results.concat(getFilesUnderDir(path.join(dir, 'static')))
   return results;
 }
 
